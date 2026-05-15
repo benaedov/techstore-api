@@ -12,7 +12,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "techstore-secret-key-2024";
+    private final String SECRET = "TechStore2024ChileProductosAdmin";
     private final long EXPIRATION = 3600000;
 
     private Key getKey() {
