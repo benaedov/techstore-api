@@ -10,14 +10,18 @@ import java.util.List;
 
 @Service
 public class ProductoService {
-    @Autowired
+    
+     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     public List<Producto> listarTodos() {
         return productoRepository.findAll();
     }
 
-    public Producto crear(ProductoDTO dto) {
+    public Producto crear(ProductoDTO dto, String usuario) {
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
@@ -25,10 +29,13 @@ public class ProductoService {
         producto.setStock(dto.getStock());
         producto.setCategoria(dto.getCategoria());
         producto.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
-        return productoRepository.save(producto);
+        Producto guardado = productoRepository.save(producto);
+
+        auditoriaService.enviarEvento("CREAR", guardado.getId(), guardado.getNombre(), usuario);
+        return guardado;
     }
 
-    public Producto modificar(Long id, ProductoDTO dto) {
+    public Producto modificar(Long id, ProductoDTO dto, String usuario) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         producto.setNombre(dto.getNombre());
@@ -39,13 +46,18 @@ public class ProductoService {
         if (dto.getActivo() != null) {
             producto.setActivo(dto.getActivo());
         }
-        return productoRepository.save(producto);
+        Producto actualizado = productoRepository.save(producto);
+
+        auditoriaService.enviarEvento("MODIFICAR", actualizado.getId(), actualizado.getNombre(), usuario);
+        return actualizado;
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Long id, String usuario) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         producto.setActivo(false);
         productoRepository.save(producto);
+
+        auditoriaService.enviarEvento("ELIMINAR", producto.getId(), producto.getNombre(), usuario);
     }
 }
